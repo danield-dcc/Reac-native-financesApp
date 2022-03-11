@@ -15,6 +15,7 @@ import {
 import theme from './src/global/styles/theme'
 import AppLoading from 'expo-app-loading';
 
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
