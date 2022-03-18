@@ -46,7 +46,7 @@ export function Register(){
         name: "Categoria",
     });
 
-    const dataKey = '@gofinances:transactions';
+    
     const navigation = useNavigation<NavigationProps>();
 
     
@@ -96,8 +96,8 @@ export function Register(){
 
        try{
            // aqui é definido uma chave
-            
-           const data = await AsyncStorage.getItem(dataKey);
+            const dataKey = '@gofinances:transactions';
+            const data = await AsyncStorage.getItem(dataKey);
             const currentData = data ? JSON.parse(data): [];
 
             const dataFormatted = [
