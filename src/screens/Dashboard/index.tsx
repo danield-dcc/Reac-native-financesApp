@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 import { useFocusEffect } from '@react-navigation/native'
 import { useTheme } from 'styled-components'
+import { useAuth } from "../../hooks/auth";
 
 import { TransactionCard, TransactionCardProps } from "../../components/TransactionCard"
 import { HighlightCard } from "../../components/HighlightCard";
@@ -46,17 +46,24 @@ export function Dashboard() {
     const [transactions, setTransactions] = useState<DataListProps[]>([]);
     const [highlightData, setHighlightData] = useState<HighlightData>({} as HighlightData)
 
-    const theme = useTheme()
+    const theme = useTheme();
+    const { signOut, user } = useAuth();
+
 
     function getLastTransactionDate(
         collection: DataListProps[],
         type:'positive'| 'negative'
         ){
+            
+        const collectionFIltered = collection.filter(transaction => transaction.type === type);
 
-        //trans form a date em um time stenp e pega o maior valor
+        if(collectionFIltered.length === 0){
+            return 0;
+        }   
+
+        //transforma date em um time stenp e pega o maior valor
         const lastTransaction = new Date(
-             Math.max.apply(Math, collection
-            .filter(transaction => transaction.type === type)
+             Math.max.apply(Math, collectionFIltered
             .map((transaction) => new Date(transaction.date).getTime())))
 
          return `${lastTransaction.getDate()} de ${lastTransaction.toLocaleString('pt-BR', {month: 'long'})} `;
@@ -64,7 +71,7 @@ export function Dashboard() {
 
 
     async function loadTransactions(){
-        const dataKey = '@gofinances:transactions';
+        const dataKey = `@gofinances:transactions_user${user.id}`;
         const response = await AsyncStorage.getItem(dataKey);
         const transactions = response ? JSON.parse(response) : [];
 
@@ -109,9 +116,12 @@ export function Dashboard() {
         setTransactions(transactionsFormatted)
 
 
-        const lastTransactionEntries = getLastTransactionDate(transactions, 'positive')
-        const lastTransactionExpensives = getLastTransactionDate(transactions, 'negative')
-        const totalInterval = `01 a ${lastTransactionExpensives}`
+        const lastTransactionEntries = getLastTransactionDate(transactions, 'positive');
+        const lastTransactionExpensives = getLastTransactionDate(transactions, 'negative');
+
+        const totalInterval = lastTransactionExpensives === 0 
+        ? 'Não há transações' 
+        : `01 a ${lastTransactionExpensives}`;
        
 
 
@@ -123,14 +133,18 @@ export function Dashboard() {
                     style: 'currency',
                     currency: 'BRL'
                 }),
-                lastTransaction: `Última entrada dia ${lastTransactionEntries}`
+                lastTransaction: lastTransactionEntries === 0 
+                ? "Não há transações" 
+                : `Última entrada dia ${lastTransactionEntries}`
             },
             expensives: {
                 amount: expensiveTotal.toLocaleString('pt-BR',{
                     style: 'currency',
                     currency: 'BRL'
                 }),
-                lastTransaction: `Última saida dia ${lastTransactionExpensives}`
+                lastTransaction: lastTransactionExpensives === 0
+                 ? "Não há transações" 
+                 : `Última saida dia ${lastTransactionExpensives}`
             },
              total:{
                  amount: total.toLocaleString('pt-BR',{
@@ -167,14 +181,14 @@ export function Dashboard() {
                 <Header>
                     <UserWrapper>
                         <UserInfo>
-                            <Photo source={{ uri: "https://avatars.githubusercontent.com/u/71035802?v=4" }} />
+                            <Photo source={{ uri: user.photo }} />
                             <User>
                                 <UserGreeting>Olá</UserGreeting>
-                                <UserName>Daniel</UserName>
+                                <UserName>{user.name}</UserName>
                             </User>
                         </UserInfo>
 
-                        <LogoutButton > 
+                        <LogoutButton onPress={signOut}> 
                         <Icon name="power" />
                         </LogoutButton>
 

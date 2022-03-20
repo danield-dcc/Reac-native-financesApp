@@ -1,16 +1,17 @@
-import React, { useCallback, useEffect, useState} from 'react';
-import { ActivityIndicator } from 'react-native'
+import React, { useCallback, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addMonths, subMonths, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale'
+import { ActivityIndicator } from 'react-native'
 import { VictoryPie } from 'victory-native'
 import { RFValue } from 'react-native-responsive-fontsize';
 
-import { addMonths, subMonths, format } from 'date-fns';
-import { ptBR } from 'date-fns/locale'
 
 import { HistoryCard } from '../../components/HistoryCard';
 
 
 import { useTheme } from 'styled-components/native'
+import { useAuth } from '../../hooks/auth';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 
 import { 
@@ -52,6 +53,7 @@ export function Resume(){
     const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>([]);
 
     const theme = useTheme()
+    const { user } = useAuth()
 
     //função responsável por lidar com a seleção das datas
     function handleDateChange(action: 'next' | 'prev'){
@@ -67,7 +69,7 @@ export function Resume(){
     async function loadData(){
         setIsLoading(true)
 
-        const dataKey = '@gofinances:transactions';
+        const dataKey = `@gofinances:transactions_user${user.id}`;
         const response = await AsyncStorage.getItem(dataKey);
         const responseFormated = response ? JSON.parse(response): [];
 

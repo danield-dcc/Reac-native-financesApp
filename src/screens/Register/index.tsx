@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Alert, Modal, TouchableWithoutFeedback, Keyboard } from 'react-native'
 
 import { useForm } from 'react-hook-form'
@@ -13,6 +13,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../hooks/auth'
 
 import { CategorySelect } from '../CategorySelect'
 
@@ -46,9 +47,9 @@ export function Register(){
         name: "Categoria",
     });
 
-    
-    const navigation = useNavigation<NavigationProps>();
+    const { user } = useAuth()
 
+    const navigation = useNavigation<NavigationProps>();
     
 
     const [transactionType, setTransactionType] = useState('');
@@ -96,7 +97,7 @@ export function Register(){
 
        try{
            // aqui é definido uma chave
-            const dataKey = '@gofinances:transactions';
+            const dataKey = `@gofinances:transactions_user${user.id}`;
             const data = await AsyncStorage.getItem(dataKey);
             const currentData = data ? JSON.parse(data): [];
 
