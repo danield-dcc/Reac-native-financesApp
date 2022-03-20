@@ -16,11 +16,13 @@ import {
 import theme from './src/global/styles/theme'
 import AppLoading from 'expo-app-loading';
 
-import { NavigationContainer } from '@react-navigation/native'
+import { Routes } from './src/routes'
 import { AppRoutes } from './src/routes/app.routes'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { SignIn } from './src/screens/SignIn';
+
+import { AuthProvider, useAuth  } from './src/hooks/auth';
 
 
 export default function App() {
@@ -30,16 +32,18 @@ export default function App() {
     Poppins_700Bold,
   })//onde as fonte são carregadas
 
-  if(!fontsLoaded){
+  const { userStorageLoading } = useAuth();
+
+  if(!fontsLoaded || userStorageLoading){
     return <AppLoading/>//não carrega a aplicação enquanto as fontes não forem carregadas
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider theme={theme}>
-        <NavigationContainer>
-          <SignIn />
-        </NavigationContainer>
+        <AuthProvider>
+          <Routes />
+        </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   )
